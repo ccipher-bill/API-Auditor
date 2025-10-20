@@ -1,18 +1,8 @@
-
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
 import { GoogleGenAI, Type } from "@google/genai";
 
 // --- HELPERS ---
-const debounce = <F extends (...args: any[]) => any>(func: F, waitFor: number) => {
-  let timeout: number;
-  return (...args: Parameters<F>): Promise<ReturnType<F>> =>
-    new Promise(resolve => {
-      clearTimeout(timeout);
-      timeout = window.setTimeout(() => resolve(func(...args)), waitFor);
-    });
-};
-
 const throttledFetch = (url: RequestInfo, options: RequestInit, timeout = 5000) => {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
@@ -27,12 +17,27 @@ const getObjectValueByPath = (obj: any, path: string): any => {
 
 const generateWebhookToken = () => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
-
 // --- ICONS ---
 const PlusIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" /></svg>;
 const ArrowDownIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path fillRule="evenodd" d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z" clipRule="evenodd" /></svg>;
-const CheckCircleIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" /></svg>;
-const XCircleIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" /></svg>;
+const CheckCircleIcon = (props: React.SVGProps<SVGSVGElement> & { title?: string }) => {
+    const { title, ...rest } = props;
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...rest}>
+            {title && <title>{title}</title>}
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+        </svg>
+    );
+};
+const XCircleIcon = (props: React.SVGProps<SVGSVGElement> & { title?: string }) => {
+    const { title, ...rest } = props;
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...rest}>
+            {title && <title>{title}</title>}
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
+        </svg>
+    );
+};
 const ExclamationTriangleIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" /></svg>;
 const ClockIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clipRule="evenodd" /></svg>;
 const SparklesIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.39-3.423 3.595c-.737.775-.242 2.057.695 2.181l4.81.65-1.83 4.401c-.321.772.782 1.583 1.573 1.003l3.423-3.595 4.753-.39 1.83-4.401c.321-.772-.782-1.583-1.573-1.003l-3.423 3.595-4.753.39-1.83-4.401c-.321-.772.782-1.583 1.573-1.003l3.423 3.595 4.753.39 1.83-4.401z" clipRule="evenodd" /></svg>;
@@ -51,6 +56,11 @@ const ChartBarIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http:
 const ArrowTrendingUpIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path d="M12.22 5.68a.75.75 0 011.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0l-2.25-2.25a.75.75 0 011.06-1.06l1.72 1.72 3.72-3.72z" /><path d="M4.5 5.5a.75.75 0 00-1.5 0v9a.75.75 0 00.75.75h9a.75.75 0 000-1.5H5.25V5.5z" /></svg>;
 const ArrowTrendingDownIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path d="M12.22 14.32a.75.75 0 001.06-1.06l-4.25-4.25a.75.75 0 00-1.06 0l-2.25 2.25a.75.75 0 101.06 1.06l1.72-1.72 3.72 3.72z" /><path d="M4.5 14.5a.75.75 0 01-1.5 0v-9a.75.75 0 01.75-.75h9a.75.75 0 010 1.5H5.25v8.25z" /></svg>;
 const ShareIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path fillRule="evenodd" d="M15.5 4.832a.75.75 0 00-1.06-.02L12.455 6.47a3.5 3.5 0 00-2.425.218l-1.84-1.06a3.5 3.5 0 10-1.155 2.05l1.84 1.06a3.5 3.5 0 000 2.644l-1.84 1.06a3.5 3.5 0 101.155 2.05l1.84-1.06a3.5 3.5 0 002.425.218l1.985 1.66a.75.75 0 101.08-1.04l-1.985-1.66a3.5 3.5 0 000-4.704l1.985-1.66a.75.75 0 00-.02-1.06zM5.5 6a2 2 0 100-4 2 2 0 000 4zm0 12a2 2 0 100-4 2 2 0 000 4zm10-7a2 2 0 10-4 0 2 2 0 004 0z" clipRule="evenodd" /></svg>;
+const PaintBrushIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path fillRule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm11 2a.75.75 0 00-1.5 0v3.5a.75.75 0 001.5 0V7z" clipRule="evenodd" /></svg>;
+const CodeBracketIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path fillRule="evenodd" d="M6.28 5.22a.75.75 0 010 1.06L2.56 10l3.72 3.72a.75.75 0 01-1.06 1.06L.97 10.53a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 0zm7.44 0a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06L14.78 14.78a.75.75 0 01-1.06-1.06L17.44 10l-3.72-3.72a.75.75 0 010-1.06zM10.75 4.75a.75.75 0 01.75.75v8.5a.75.75 0 01-1.5 0v-8.5a.75.75 0 01.75-.75z" clipRule="evenodd" /></svg>;
+const KeyIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" /></svg>;
+const EyeIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" /><path fillRule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.18l3.423-3.423a1.651 1.651 0 012.334 0L10 9.404l3.579-3.579a1.651 1.651 0 012.334 0l3.423 3.423a1.651 1.651 0 010 1.18l-3.423 3.423a1.651 1.651 0 01-2.334 0L10 10.59l-3.579 3.579a1.651 1.651 0 01-2.334 0L.664 10.59z" clipRule="evenodd" /></svg>;
+const EyeSlashIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path fillRule="evenodd" d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.18l-3.423-3.423a1.651 1.651 0 00-2.334 0L10 9.404 4.341 3.745A10.009 10.009 0 003.28 2.22zM10 12.5a2.5 2.5 0 01-2.5-2.5 10.022 10.022 0 01.05-1.033l-1.428-1.428A4.001 4.001 0 0010 14.5a4 4 0 100-8 3.978 3.978 0 00-1.032.15l-1.428-1.428A5.5 5.5 0 0115.5 9c0 .48-.06.94-.17 1.382l-1.408-1.408a2.5 2.5 0 01-1.422-1.422l-1.408-1.408A5.485 5.485 0 0110 3.5a5.5 5.5 0 015.5 5.5c0 .678-.12 1.33-.352 1.936l-2.091-2.091a4.004 4.004 0 00-2.296-2.296L10 5.091a2.5 2.5 0 00-2.5 2.5c0 .313.056.613.163.89l-1.17-1.17A4.001 4.001 0 004.5 9c0 .35.044.688.128 1.01l-1.08-1.08A5.5 5.5 0 014.5 9a5.5 5.5 0 0110.155 1.55l-1.579-1.579A4.002 4.002 0 0010 7.5a2.5 2.5 0 00-2.5 2.5c0 .313.056.613.163.89l-1.17-1.17A4.001 4.001 0 004.5 9c0 .35.044.688.128 1.01l-1.08-1.08A5.5 5.5 0 014.5 9a5.5 5.5 0 0110.155 1.55l-1.579-1.579A4.002 4.002 0 0010 7.5a2.5 2.5 0 00-2.5 2.5c0 .313.056.613.163.89l-1.17-1.17A4.001 4.001 0 004.5 9c0 .35.044.688.128 1.01l-1.08-1.08A5.5 5.5 0 014.5 9a5.5 5.5 0 0110.155 1.55l-1.579-1.579A4.002 4.002 0 0010 7.5a2.5 2.5 0 00-2.5 2.5z" clipRule="evenodd" /></svg>;
 
 
 // --- TYPES ---
@@ -59,6 +69,7 @@ type Plugin = {
   type: 'responseTimeSLA' | 'jsonAssertion';
   config: any; // Can be ResponseTimeSLAPluginConfig or JSONAssertionPluginConfig
 };
+type ScriptTestResult = { name: string; success: boolean; error?: string };
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'WS';
 type Endpoint = {
   id: string;
@@ -74,9 +85,15 @@ type Endpoint = {
   wsMessage?: string; // Used for WebSocket message
   assertions: { type: 'statusCode'; value: string }[];
   plugins: Plugin[];
+  customScript: string;
   dependencies?: string[];
   interval: 'fast' | 'normal' | 'slow';
   webhookToken: string;
+};
+type EndpointTemplate = {
+    id: string;
+    name: string;
+    config: Partial<Omit<Endpoint, 'id' | 'name' | 'webhookToken' | 'dependencies'>>;
 };
 type HistoryItem = {
   id: string;
@@ -89,6 +106,7 @@ type HistoryItem = {
   error?: string;
   responseBody?: string;
   pluginResults?: { pluginId: string; type: string; name: string; success: boolean; message: string }[];
+  scriptResults?: ScriptTestResult[];
 };
 type AIAnalysisResult = {
     status: 'HEALTHY' | 'DEGRADED' | 'UNSTABLE' | 'FAILURE' | 'UNKNOWN';
@@ -134,19 +152,28 @@ type Workspace = {
 type Workspaces = {
     [key: string]: Workspace;
 };
+type AppSettings = {
+    theme: 'system' | 'light' | 'dark';
+    accentColor: string;
+    templates: EndpointTemplate[];
+};
 type ViewType = 'dashboard' | 'endpoint' | 'map';
 
 // --- CONSTANTS ---
 const INTERVAL_MAP = { fast: 15000, normal: 60000, slow: 300000 };
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 const DEFAULT_ENDPOINT: Omit<Endpoint, 'id' | 'webhookToken'> = {
   name: '', group: '', url: '', protocol: 'https', apiType: 'REST', methods: ['GET'],
   headers: [], body: '', variables: '', wsMessage: '', assertions: [{ type: 'statusCode', value: '200' }],
-  plugins: [], dependencies: [], interval: 'normal',
+  plugins: [], dependencies: [], interval: 'normal', customScript: '',
 };
 const DEFAULT_BENCHMARK_CONFIG: BenchmarkConfig = {
     virtualUsers: 10,
     duration: 15, // seconds
+};
+const DEFAULT_SETTINGS: AppSettings = {
+    theme: 'system',
+    accentColor: '#007bff',
+    templates: [],
 };
 const INITIAL_AI_ANALYSIS: AIAnalysisResult = {
   status: 'UNKNOWN',
@@ -328,10 +355,61 @@ const executeSingleCheck = async (endpoint: Endpoint, method: HttpMethod): Promi
             pluginResults.push(result);
         }
 
-        const allPluginsSuccess = pluginResults.every(r => r.success);
-        const overallSuccess = baseSuccess && allPluginsSuccess && !graphqlError;
+        // --- Custom Script Execution ---
+        const scriptResults: ScriptTestResult[] = [];
+        let scriptError: string | undefined;
+        if (endpoint.customScript && endpoint.customScript.trim() !== '') {
+            const testResults: ScriptTestResult[] = [];
+            
+            const apm = {
+                response: {
+                    json: () => responseBodyJson,
+                    text: () => responseText,
+                    status: response.status,
+                    headers: Object.fromEntries(response.headers.entries()),
+                    latency: latency,
+                },
+                test: (name: string, fn: () => void) => {
+                    try {
+                        fn();
+                        testResults.push({ name, success: true });
+                    } catch (e: any) {
+                        testResults.push({ name, success: false, error: e.message || 'Assertion failed' });
+                    }
+                },
+                assert: (condition: boolean, message = "Assertion failed") => {
+                    if (!condition) {
+                        throw new Error(message);
+                    }
+                }
+            };
 
-        return { endpointId: endpoint.id, method, success: overallSuccess, statusCode: response.status, latency, pluginResults, responseBody: truncatedBody, error: graphqlError || undefined };
+            try {
+                const scriptFunction = new Function('apm', endpoint.customScript);
+                scriptFunction(apm);
+                scriptResults.push(...testResults);
+            } catch (e: any) {
+                scriptError = `Script execution error: ${e.message}`;
+            }
+        }
+        // --- End Custom Script Execution ---
+
+        const allPluginsSuccess = pluginResults.every(r => r.success);
+        const allScriptsSuccess = scriptResults.every(r => r.success);
+        const overallSuccess = baseSuccess && allPluginsSuccess && allScriptsSuccess && !graphqlError && !scriptError;
+
+        return { 
+            endpointId: endpoint.id, 
+            method, 
+            success: overallSuccess, 
+            statusCode: response.status, 
+            latency, 
+            pluginResults, 
+            scriptResults,
+            responseBody: truncatedBody, 
+            error: graphqlError || scriptError || undefined 
+        };
+
     } catch (error: any) {
         return { endpointId: endpoint.id, method, success: false, error: error.message, latency: Date.now() - startTime };
     }
@@ -342,8 +420,7 @@ const runChecks = async (endpoint: Endpoint): Promise<Omit<HistoryItem, 'id' | '
         const result = await executeSingleCheck(endpoint, 'WS');
         return [result];
     }
-    // FIX: Explicitly cast 'POST' to HttpMethod to prevent type widening to string, ensuring type safety when calling executeSingleCheck.
-    const methodsToRun = endpoint.apiType === 'GraphQL' ? ['POST' as HttpMethod] : endpoint.methods;
+    const methodsToRun: HttpMethod[] = endpoint.apiType === 'GraphQL' ? ['POST'] : endpoint.methods;
     const checkPromises = methodsToRun.map(method => executeSingleCheck(endpoint, method));
     return Promise.all(checkPromises);
 };
@@ -351,6 +428,7 @@ const runChecks = async (endpoint: Endpoint): Promise<Omit<HistoryItem, 'id' | '
 
 const suggestConfig = async (url: string): Promise<Partial<Endpoint>> => {
   try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
     const result = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: `Analyze this API endpoint URL: "${url}". Suggest a configuration including a name, group, the most likely HTTP method (e.g., 'GET', 'POST'), and protocol ('http' or 'https').`,
@@ -387,6 +465,11 @@ const suggestConfig = async (url: string): Promise<Partial<Endpoint>> => {
 };
 
 const runDeepDiveAnalysis = async (endpoint: Endpoint, history: HistoryItem[]): Promise<AIAnalysisResult> => {
+    if (!process.env.API_KEY) return {
+        ...INITIAL_AI_ANALYSIS,
+        summary: "The application's API Key is not configured. Please contact the administrator.",
+        status: 'UNKNOWN'
+    };
     if (history.length < 10) return {
         ...INITIAL_AI_ANALYSIS,
         summary: "Not enough data for a deep analysis. At least 10 checks are needed.",
@@ -464,6 +547,7 @@ const runDeepDiveAnalysis = async (endpoint: Endpoint, history: HistoryItem[]): 
     `;
 
     try {
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
         const result = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: prompt,
@@ -530,7 +614,7 @@ const runDeepDiveAnalysis = async (endpoint: Endpoint, history: HistoryItem[]): 
         console.error("AI deep dive failed:", error);
         return {
             ...INITIAL_AI_ANALYSIS,
-            summary: "An error occurred during the AI analysis.",
+            summary: "An error occurred during the AI analysis. Please check your API key and try again.",
             status: 'UNKNOWN'
         };
     }
@@ -549,17 +633,33 @@ const runBenchmark = async (
     
     const methodToTest = endpoint.methods[0];
 
+    let lastProcessedIndex = 0;
+    let liveSuccessfulReqs = 0;
+    let liveTotalLatency = 0;
+
     const progressInterval = setInterval(() => {
         if (abortSignal.aborted) {
             clearInterval(progressInterval);
             return;
         }
+
+        const newResults = allResults.slice(lastProcessedIndex);
+        lastProcessedIndex = allResults.length;
+
+        for (const result of newResults) {
+            if (result.success) {
+                liveSuccessfulReqs++;
+                liveTotalLatency += result.latency;
+            }
+        }
+        
         const elapsed = (Date.now() - startTime) / 1000;
         const progress = Math.min((elapsed / duration) * 100, 100);
-        const successfulReqs = allResults.filter(r => r.success);
+        
         const currentRps = allResults.length / elapsed || 0;
-        const currentAvgLatency = successfulReqs.reduce((acc, r) => acc + r.latency, 0) / successfulReqs.length || 0;
-        const currentErrors = allResults.length - successfulReqs.length;
+        const currentAvgLatency = liveSuccessfulReqs > 0 ? liveTotalLatency / liveSuccessfulReqs : 0;
+        const currentErrors = allResults.length - liveSuccessfulReqs;
+        
         onProgress(progress, { rps: currentRps, avgLatency: currentAvgLatency, errors: currentErrors });
     }, 500);
 
@@ -635,30 +735,223 @@ const runBenchmark = async (
     };
 };
 
+const discoverEndpoints = async (baseUrl: string): Promise<{name: string, path: string, method: HttpMethod}[]> => {
+    try {
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+        const result = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: `Analyze this base API URL: "${baseUrl}". Suggest up to 5 common REST API endpoints that might exist under this base URL. For each endpoint, provide a relative path (e.g., '/users', '/products/{id}'), the most likely HTTP method, and a descriptive name. Focus on standard, high-level resources.`,
+            config: {
+                responseMimeType: 'application/json',
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        endpoints: {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    name: { type: Type.STRING, description: "A short, descriptive name for the endpoint (e.g., 'Get All Users')." },
+                                    path: { type: Type.STRING, description: "The relative path of the endpoint (e.g., '/users')." },
+                                    method: { type: Type.STRING, description: "The suggested HTTP method ('GET', 'POST', 'PUT', 'DELETE', 'PATCH')." },
+                                },
+                                required: ["name", "path", "method"],
+                            }
+                        }
+                    },
+                    required: ["endpoints"],
+                },
+            }
+        });
+        const suggestion = JSON.parse(result.text);
+        const validMethods: HttpMethod[] = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'];
+        
+        return suggestion.endpoints
+            .map((ep: any) => ({ ...ep, method: ep.method.toUpperCase() }))
+            .filter((ep: any) => validMethods.includes(ep.method as HttpMethod));
+            
+    } catch (error) {
+        console.error("AI endpoint discovery failed:", error);
+        throw error;
+    }
+}
+
 
 // --- COMPONENTS ---
-const AddEndpointForm = ({ allEndpoints, onAdd, onCancel }: { allEndpoints: Endpoint[]; onAdd: (endpoint: Omit<Endpoint, 'id' | 'webhookToken'>) => void; onCancel: () => void }) => {
+const AutoSetupModal = ({ onAddMultiple, onCancel }: { onAddMultiple: (endpoints: Omit<Endpoint, 'id' | 'webhookToken'>[]) => void; onCancel: () => void; }) => {
+    const [step, setStep] = useState<'input' | 'loading' | 'review' | 'error'>('input');
+    const [baseUrl, setBaseUrl] = useState('');
+    const [protocol, setProtocol] = useState<Endpoint['protocol']>('https');
+    const [discoveredEndpoints, setDiscoveredEndpoints] = useState<{name: string, path: string, method: HttpMethod}[]>([]);
+    const [selectedEndpointIndices, setSelectedEndpointIndices] = useState<Set<number>>(new Set());
+    const [error, setError] = useState<string | null>(null);
+
+    const handleDiscover = async () => {
+        if (!baseUrl) return;
+        setStep('loading');
+        setError(null);
+        try {
+            const results = await discoverEndpoints(`${protocol}://${baseUrl}`);
+            setDiscoveredEndpoints(results);
+            setSelectedEndpointIndices(new Set(results.map((_, i) => i))); // Select all by default
+            setStep('review');
+        } catch (err: any) {
+            const errorMessage = err?.message || String(err);
+            if (errorMessage.includes('API Key')) {
+                setError('The application API Key is invalid or missing.');
+            } else if (errorMessage.includes('429') || errorMessage.toUpperCase().includes('RESOURCE_EXHAUSTED')) {
+                setError('AI quota exceeded. Please wait a moment and try again.');
+            } else {
+                setError('AI failed to discover endpoints. Please check the base URL or try again.');
+            }
+            setStep('error');
+        }
+    };
+    
+    const handleToggleSelection = (index: number) => {
+        setSelectedEndpointIndices(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(index)) {
+                newSet.delete(index);
+            } else {
+                newSet.add(index);
+            }
+            return newSet;
+        });
+    };
+
+    const handleAddSelected = () => {
+        const endpointsToAdd = discoveredEndpoints
+            .filter((_, i) => selectedEndpointIndices.has(i))
+            .map(ep => ({
+                ...DEFAULT_ENDPOINT,
+                name: ep.name,
+                group: 'Discovered',
+                url: `${baseUrl}${ep.path}`,
+                protocol,
+                apiType: 'REST' as const,
+                methods: [ep.method],
+                assertions: [{ type: 'statusCode' as const, value: '200' }],
+            }));
+        onAddMultiple(endpointsToAdd);
+    };
+
+    const renderContent = () => {
+        switch (step) {
+            case 'loading':
+                return (
+                    <div className="auto-setup-status">
+                        <div className="spinner" />
+                        <p>AI is analyzing your API...</p>
+                        <span>This may take a moment.</span>
+                    </div>
+                );
+            case 'error':
+                 return (
+                    <div className="auto-setup-status">
+                        <XCircleIcon className="status-down" style={{width: 48, height: 48}} />
+                        <p>Analysis Failed</p>
+                        <span>{error}</span>
+                        <button className="submit-btn" onClick={() => setStep('input')}>Try Again</button>
+                    </div>
+                );
+            case 'review':
+                return (
+                    <>
+                        <h3>Discovered Endpoints</h3>
+                        <p className="form-tip">Select the endpoints you want to start monitoring.</p>
+                        <div className="discovered-endpoints-list">
+                            {discoveredEndpoints.length === 0 ? (
+                                <p className="placeholder-text">The AI could not find any common endpoints for this URL.</p>
+                            ) : (
+                                discoveredEndpoints.map((ep, index) => (
+                                <label key={index} className="discovered-endpoint-item">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedEndpointIndices.has(index)}
+                                        onChange={() => handleToggleSelection(index)}
+                                    />
+                                    <div className="endpoint-info">
+                                        <span className={`method-badge method-${ep.method.toLowerCase()}`}>{ep.method}</span>
+                                        <strong>{ep.name}</strong>
+                                        <span className="endpoint-path">{ep.path}</span>
+                                    </div>
+                                </label>
+                            )))}
+                        </div>
+                        <div className="form-actions">
+                            <button type="button" className="cancel-btn" onClick={() => setStep('input')}>Back</button>
+                            <button type="submit" className="submit-btn" onClick={handleAddSelected} disabled={selectedEndpointIndices.size === 0}>
+                                Add {selectedEndpointIndices.size} Endpoints
+                            </button>
+                        </div>
+                    </>
+                );
+            case 'input':
+            default:
+                return (
+                    <>
+                        <h3>Auto-setup with AI</h3>
+                        <p className="form-tip">Enter your API's base URL. The AI will attempt to discover common endpoints to monitor.</p>
+                        <div className="form-group">
+                            <label>Base API URL</label>
+                             <div className="url-input">
+                                <select value={protocol} onChange={e => setProtocol(e.target.value as Endpoint['protocol'])}>
+                                    <option value="https">https://</option>
+                                    <option value="http">http://</option>
+                                </select>
+                                <input
+                                    type="text"
+                                    value={baseUrl}
+                                    onChange={e => setBaseUrl(e.target.value.replace(/^(https?:\/\/)/, ''))}
+                                    placeholder="e.g., api.myapp.com/v1"
+                                />
+                            </div>
+                        </div>
+                         <div className="form-actions">
+                            <button type="button" className="cancel-btn" onClick={onCancel}>Cancel</button>
+                            <button type="submit" className="submit-btn" onClick={handleDiscover} disabled={!baseUrl}>
+                                <SparklesIcon /> Discover Endpoints
+                            </button>
+                        </div>
+                    </>
+                );
+        }
+    };
+    
+    return (
+        <div className="modal-overlay">
+            <div className="modal-content auto-setup-modal">
+                {renderContent()}
+            </div>
+        </div>
+    );
+};
+
+const AddEndpointForm = ({ allEndpoints, onAdd, onCancel, templates }: { allEndpoints: Endpoint[]; onAdd: (endpoint: Omit<Endpoint, 'id' | 'webhookToken'>) => void; onCancel: () => void; templates: EndpointTemplate[]; }) => {
   const [endpoint, setEndpoint] = useState<Omit<Endpoint, 'id' | 'webhookToken'>>(DEFAULT_ENDPOINT);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'config' | 'headers' | 'body' | 'script'>('config');
 
   useEffect(() => {
-    if (endpoint.apiType === 'GraphQL') {
-        if (endpoint.methods.length !== 1 || endpoint.methods[0] !== 'POST') {
-            handleChange('methods', ['POST']);
+    setEndpoint(prev => {
+        let newEndpoint = {...prev};
+        if (prev.apiType === 'GraphQL') {
+            if (prev.methods.length !== 1 || prev.methods[0] !== 'POST') newEndpoint.methods = ['POST'];
+            if (prev.protocol !== 'http' && prev.protocol !== 'https') newEndpoint.protocol = 'https';
+        } else if (prev.apiType === 'WebSocket') {
+            if (prev.protocol !== 'ws' && prev.protocol !== 'wss') newEndpoint.protocol = 'wss';
+            if (prev.methods.length !== 1 || prev.methods[0] !== 'WS') newEndpoint.methods = ['WS'];
+        } else { // REST
+            if (prev.protocol !== 'http' && prev.protocol !== 'https') newEndpoint.protocol = 'https';
+            const validRestMethods: HttpMethod[] = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'];
+            if (prev.methods.some(m => !validRestMethods.includes(m))) {
+                newEndpoint.methods = ['GET'];
+            }
         }
-        if (endpoint.protocol !== 'http' && endpoint.protocol !== 'https') {
-            handleChange('protocol', 'https');
-        }
-    } else if (endpoint.apiType === 'WebSocket') {
-        if (endpoint.protocol !== 'ws' && endpoint.protocol !== 'wss') {
-            handleChange('protocol', 'wss');
-        }
-    } else { // REST
-        if (endpoint.protocol !== 'http' && endpoint.protocol !== 'https') {
-            handleChange('protocol', 'https');
-        }
-    }
+        return newEndpoint;
+    });
   }, [endpoint.apiType]);
 
   const handleChange = (field: keyof Omit<Endpoint, 'id' | 'webhookToken'>, value: any) => {
@@ -734,7 +1027,9 @@ const AddEndpointForm = ({ allEndpoints, onAdd, onCancel }: { allEndpoints: Endp
         setEndpoint(prev => ({...prev, ...suggestion}));
     } catch (error: any) {
         const errorMessage = error?.message || String(error);
-        if (errorMessage.includes('429') || errorMessage.toUpperCase().includes('RESOURCE_EXHAUSTED')) {
+        if (errorMessage.includes('API Key')) {
+            setSuggestionError('The application API Key is invalid or missing.');
+        } else if (errorMessage.includes('429') || errorMessage.toUpperCase().includes('RESOURCE_EXHAUSTED')) {
              setSuggestionError('AI quota exceeded. Please wait a moment and try again, or check your billing details.');
         } else {
              setSuggestionError('Failed to get suggestions. Please check the console for details.');
@@ -744,6 +1039,34 @@ const AddEndpointForm = ({ allEndpoints, onAdd, onCancel }: { allEndpoints: Endp
     }
   };
 
+  const handleApplyTemplate = (templateId: string) => {
+    const template = templates.find(t => t.id === templateId);
+    if (template) {
+        setEndpoint(prev => ({
+            ...prev,
+            ...template.config,
+            name: prev.name, // Keep existing name and URL
+            url: prev.url
+        }));
+    }
+  };
+  
+  const scriptPlaceholder = `// The 'apm' object is globally available in this script.
+// apm.response contains the API response data.
+// Use apm.test() to define test cases.
+
+apm.test("Response contains user data", () => {
+  const data = apm.response.json();
+  apm.assert(data.user, "User object should exist");
+  apm.assert(data.user.id === 123, "User ID should be 123");
+});
+
+apm.test("Content-Type header is correct", () => {
+  const contentType = apm.response.headers['content-type'];
+  apm.assert(contentType.includes('application/json'));
+});
+`;
+
   const isRest = endpoint.apiType === 'REST';
   const isGraphQL = endpoint.apiType === 'GraphQL';
   const isWebSocket = endpoint.apiType === 'WebSocket';
@@ -751,8 +1074,18 @@ const AddEndpointForm = ({ allEndpoints, onAdd, onCancel }: { allEndpoints: Endp
 
   return (
     <form onSubmit={handleSubmit} className="add-endpoint-form">
-      <h2>Add New Endpoint</h2>
-      {/* API Type */}
+      <div className="form-header">
+        <h2>Add New Endpoint</h2>
+        {templates.length > 0 && (
+            <div className="form-group template-selector">
+                <select onChange={e => handleApplyTemplate(e.target.value)} defaultValue="">
+                    <option value="" disabled>Apply a template...</option>
+                    {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+            </div>
+        )}
+      </div>
+
       <div className="form-group">
         <label>API Type</label>
         <div className="segmented-control">
@@ -761,7 +1094,7 @@ const AddEndpointForm = ({ allEndpoints, onAdd, onCancel }: { allEndpoints: Endp
             <button type="button" className={isWebSocket ? 'active' : ''} onClick={() => handleChange('apiType', 'WebSocket')}>WebSocket</button>
         </div>
       </div>
-      {/* Basic Info */}
+      
       <div className="form-row">
         <div className="form-group">
           <label>Endpoint Name</label>
@@ -772,178 +1105,144 @@ const AddEndpointForm = ({ allEndpoints, onAdd, onCancel }: { allEndpoints: Endp
           <input type="text" value={endpoint.group} onChange={e => handleChange('group', e.target.value)} />
         </div>
       </div>
-      {/* URL */}
+
       <div className="form-group">
         <label>URL</label>
         <div className="url-input">
             <select value={endpoint.protocol} onChange={e => handleChange('protocol', e.target.value as Endpoint['protocol'])}>
-                {isWebSocket ? (
-                    <>
-                        <option value="wss">wss://</option>
-                        <option value="ws">ws://</option>
-                    </>
-                ) : (
-                    <>
-                        <option value="https">https://</option>
-                        <option value="http">http://</option>
-                    </>
-                )}
+                {isWebSocket ? (<><option value="wss">wss://</option><option value="ws">ws://</option></>) : (<><option value="https">https://</option><option value="http">http://</option></>)}
             </select>
             <input type="text" value={endpoint.url} onChange={e => { setSuggestionError(null); handleChange('url', e.target.value); }} required />
-            {!isWebSocket &&
-                <button type="button" className="suggest-btn" onClick={handleSuggest} disabled={isSuggesting || !endpoint.url}>
-                    {isSuggesting ? <div className="spinner small" /> : <SparklesIcon />} Suggest Config
-                </button>
-            }
+            {!isWebSocket && <button type="button" className="suggest-btn" onClick={handleSuggest} disabled={isSuggesting || !endpoint.url}>{isSuggesting ? <div className="spinner small" /> : <SparklesIcon />} Suggest</button>}
         </div>
         {suggestionError && <div className="form-error-message">{suggestionError}</div>}
       </div>
-      {/* Method & Interval */}
-      <div className="form-row">
-          {(isRest || isGraphQL) && (
-            <div className="form-group">
-                <label>HTTP Methods</label>
-                <div className="method-selector">
-                    {(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] as HttpMethod[]).map(m => (
-                        <button
-                            type="button"
-                            key={m}
-                            className={endpoint.methods.includes(m) ? 'active' : ''}
-                            onClick={() => handleMethodChange(m)}
-                            disabled={isGraphQL}
-                        >
-                            {m}
-                        </button>
-                    ))}
-                </div>
-            </div>
-           )}
-          <div className="form-group">
-            <label>Check Interval</label>
-            <select value={endpoint.interval} onChange={e => handleChange('interval', e.target.value as Endpoint['interval'])}>
-                <option value="fast">Fast (15s)</option>
-                <option value="normal">Normal (1m)</option>
-                <option value="slow">Slow (5m)</option>
-            </select>
-          </div>
-      </div>
-      {/* Headers */}
-      {!isWebSocket && (
-          <div className="form-section">
-            <h3>Headers</h3>
-            {endpoint.headers.map((header, index) => (
-                <div className="form-row-dynamic" key={index}>
-                <input type="text" placeholder="Key" value={header.key} onChange={e => handleHeaderChange(index, 'key', e.target.value)} />
-                <input type="text" placeholder="Value" value={header.value} onChange={e => handleHeaderChange(index, 'value', e.target.value)} />
-                <button type="button" onClick={() => handleRemoveHeader(index)}>Remove</button>
-                </div>
-            ))}
-            <button type="button" className="add-btn" onClick={handleAddHeader}>Add Header</button>
-          </div>
-      )}
       
-      {/* Body / Query / Message */}
-      {isGraphQL ? (
-        <>
-            <div className="form-group">
-                <label>GraphQL Query</label>
-                <textarea placeholder={'query GetUsers {\n  users {\n    id\n    name\n  }\n}'} value={endpoint.body} onChange={e => handleChange('body', e.target.value)} rows={6}></textarea>
-            </div>
-            <div className="form-group">
-                <label>GraphQL Variables (JSON)</label>
-                <textarea placeholder={'{ "limit": 10 }'} value={endpoint.variables} onChange={e => handleChange('variables', e.target.value)} rows={3}></textarea>
-            </div>
-        </>
-      ) : isRest && showBody ? (
-        <div className="form-group">
-            <label>Request Body (JSON)</label>
-            <textarea value={endpoint.body} onChange={e => handleChange('body', e.target.value)} rows={4}></textarea>
-        </div>
-      ) : isWebSocket && (
-        <div className="form-group">
-            <label>Message to Send (optional)</label>
-            <textarea placeholder="e.g., {&quot;action&quot;: &quot;subscribe&quot;, &quot;channel&quot;: &quot;news&quot;}" value={endpoint.wsMessage} onChange={e => handleChange('wsMessage', e.target.value)} rows={4}></textarea>
-            <p className="form-tip">If a message is sent, the check is successful upon receiving any response. If no message is sent, the check is successful upon connection.</p>
-        </div>
-      )}
+      <div className="form-config-tabs">
+        <button type="button" className={activeTab === 'config' ? 'active' : ''} onClick={() => setActiveTab('config')}>Configuration</button>
+        {!isWebSocket && <button type="button" className={activeTab === 'headers' ? 'active' : ''} onClick={() => setActiveTab('headers')}>Headers</button>}
+        {!isWebSocket && (showBody || isGraphQL) && <button type="button" className={activeTab === 'body' ? 'active' : ''} onClick={() => setActiveTab('body')}>Body / Query</button>}
+        {!isWebSocket && <button type="button" className={activeTab === 'script' ? 'active' : ''} onClick={() => setActiveTab('script')}><CodeBracketIcon/>Custom Script</button>}
+      </div>
 
-      {/* Assertions */}
-      {!isWebSocket && (
-          <div className="form-section">
-            <h3>Assertions</h3>
-            {endpoint.assertions.map((assertion, index) => (
-                <div className="form-row-dynamic" key={index}>
-                <select value={assertion.type} onChange={e => handleAssertionChange(index, 'type', e.target.value)}>
-                    <option value="statusCode">Status Code</option>
-                </select>
-                <input type="text" placeholder="Value" value={assertion.value} onChange={e => handleAssertionChange(index, 'value', e.target.value)} />
-                </div>
-            ))}
-            {isGraphQL && <div className="form-tip">For GraphQL, the monitor also automatically checks for an 'errors' field in the response.</div>}
-          </div>
-      )}
-
-       {/* Dependencies */}
-       <div className="form-section">
-            <h3>Dependencies</h3>
-            <p className="form-tip">Select other endpoints that this endpoint calls. This will be visualized in the System Map.</p>
-            <div className="dependency-selector">
-                {allEndpoints.length > 0 ? allEndpoints.map(ep => (
-                    <label key={ep.id} className="dependency-item">
-                        <input
-                            type="checkbox"
-                            checked={(endpoint.dependencies || []).includes(ep.id)}
-                            onChange={() => handleDependencyChange(ep.id)}
-                        />
-                        {ep.name} <span className="dependency-group">({ep.group || 'Ungrouped'})</span>
-                    </label>
-                )) : <p className="form-tip">No other endpoints exist to select as dependencies.</p>}
-            </div>
-        </div>
-        
-      {/* Plugins */}
-        {!isWebSocket && (
-            <div className="form-section">
-                <h3>Plugins</h3>
-                {endpoint.plugins.map(plugin => (
-                    <div key={plugin.id} className="plugin-config-container">
-                        <div className="plugin-header">
-                            <h4>{PLUGIN_METADATA[plugin.type].name}</h4>
-                            <button type="button" onClick={() => handleRemovePlugin(plugin.id)}>Remove</button>
-                        </div>
-                        {plugin.type === 'responseTimeSLA' && (
-                            <div className="form-row">
-                                <label>Max Latency (ms)</label>
-                                <input type="number" value={plugin.config.maxLatency} onChange={e => handlePluginChange(plugin.id, { ...plugin.config, maxLatency: parseInt(e.target.value, 10) || 0 })}/>
+      <div className="form-tab-content">
+        {activeTab === 'config' && (
+            <>
+                <div className="form-row">
+                    {(isRest || isGraphQL) && (
+                        <div className="form-group">
+                            <label>HTTP Methods</label>
+                            <div className="method-selector">
+                                {(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] as HttpMethod[]).map(m => (
+                                    <button type="button" key={m} className={endpoint.methods.includes(m) ? 'active' : ''} onClick={() => handleMethodChange(m)} disabled={isGraphQL}>{m}</button>
+                                ))}
                             </div>
-                        )}
-                        {plugin.type === 'jsonAssertion' && (
-                            <>
-                                <div className="form-group">
-                                    <label>JSON Path (dot notation)</label>
-                                    <input type="text" placeholder="e.g., data.user.id" value={plugin.config.path} onChange={e => handlePluginChange(plugin.id, { ...plugin.config, path: e.target.value })}/>
-                                </div>
-                                <div className="form-row-dynamic">
-                                    <select value={plugin.config.operator} onChange={e => handlePluginChange(plugin.id, { ...plugin.config, operator: e.target.value })}>
-                                        <option value="equals">equals</option>
-                                        <option value="notEquals">not equals</option>
-                                        <option value="contains">contains</option>
-                                        <option value="greaterThan">is greater than</option>
-                                        <option value="lessThan">is less than</option>
-                                    </select>
-                                    <input type="text" placeholder="Expected Value" value={plugin.config.value} onChange={e => handlePluginChange(plugin.id, { ...plugin.config, value: e.target.value })}/>
-                                </div>
-                            </>
-                        )}
+                        </div>
+                    )}
+                    <div className="form-group">
+                        <label>Check Interval</label>
+                        <select value={endpoint.interval} onChange={e => handleChange('interval', e.target.value as Endpoint['interval'])}>
+                            <option value="fast">Fast (15s)</option><option value="normal">Normal (1m)</option><option value="slow">Slow (5m)</option>
+                        </select>
+                    </div>
+                </div>
+
+                {!isWebSocket && (
+                  <div className="form-section">
+                    <h3>Assertions</h3>
+                    {endpoint.assertions.map((assertion, index) => (
+                        <div className="form-row-dynamic" key={index}>
+                        <select value={assertion.type} onChange={e => handleAssertionChange(index, 'type', e.target.value)}><option value="statusCode">Status Code</option></select>
+                        <input type="text" placeholder="Value" value={assertion.value} onChange={e => handleAssertionChange(index, 'value', e.target.value)} />
+                        </div>
+                    ))}
+                    {isGraphQL && <div className="form-tip">For GraphQL, the monitor also automatically checks for an 'errors' field in the response.</div>}
+                  </div>
+                )}
+                
+                 <div className="form-section">
+                    <h3>Dependencies</h3>
+                    <p className="form-tip">Select other endpoints that this endpoint calls. This will be visualized in the System Map.</p>
+                    <div className="dependency-selector">
+                        {allEndpoints.length > 0 ? allEndpoints.map(ep => (
+                            <label key={ep.id} className="dependency-item">
+                                <input type="checkbox" checked={(endpoint.dependencies || []).includes(ep.id)} onChange={() => handleDependencyChange(ep.id)}/>
+                                {ep.name} <span className="dependency-group">({ep.group || 'Ungrouped'})</span>
+                            </label>
+                        )) : <p className="form-tip">No other endpoints exist to select as dependencies.</p>}
+                    </div>
+                </div>
+                
+                {!isWebSocket && (
+                    <div className="form-section">
+                        <h3>Plugins</h3>
+                        {endpoint.plugins.map(plugin => (
+                            <div key={plugin.id} className="plugin-config-container">
+                                <div className="plugin-header"><h4>{PLUGIN_METADATA[plugin.type].name}</h4><button type="button" onClick={() => handleRemovePlugin(plugin.id)}>Remove</button></div>
+                                {plugin.type === 'responseTimeSLA' && (<div className="form-row"><label>Max Latency (ms)</label><input type="number" value={plugin.config.maxLatency} onChange={e => handlePluginChange(plugin.id, { ...plugin.config, maxLatency: parseInt(e.target.value, 10) || 0 })}/></div>)}
+                                {plugin.type === 'jsonAssertion' && (<><div className="form-group"><label>JSON Path (dot notation)</label><input type="text" placeholder="e.g., data.user.id" value={plugin.config.path} onChange={e => handlePluginChange(plugin.id, { ...plugin.config, path: e.target.value })}/></div><div className="form-row-dynamic"><select value={plugin.config.operator} onChange={e => handlePluginChange(plugin.id, { ...plugin.config, operator: e.target.value })}><option value="equals">equals</option><option value="notEquals">not equals</option><option value="contains">contains</option><option value="greaterThan">is greater than</option><option value="lessThan">is less than</option></select><input type="text" placeholder="Expected Value" value={plugin.config.value} onChange={e => handlePluginChange(plugin.id, { ...plugin.config, value: e.target.value })}/></div></>)}
+                            </div>
+                        ))}
+                        <div className="add-plugin-controls">
+                            <button type="button" className="add-btn" onClick={() => handleAddPlugin('responseTimeSLA')}>+ Add Response Time SLA</button>
+                            <button type="button" className="add-btn" onClick={() => handleAddPlugin('jsonAssertion')}>+ Add JSON Content Assertion</button>
+                        </div>
+                    </div>
+                )}
+            </>
+        )}
+        {activeTab === 'headers' && !isWebSocket && (
+             <div className="form-section standalone">
+                <h3>Headers</h3>
+                {endpoint.headers.map((header, index) => (
+                    <div className="form-row-dynamic" key={index}>
+                    <input type="text" placeholder="Key" value={header.key} onChange={e => handleHeaderChange(index, 'key', e.target.value)} />
+                    <input type="text" placeholder="Value" value={header.value} onChange={e => handleHeaderChange(index, 'value', e.target.value)} />
+                    <button type="button" onClick={() => handleRemoveHeader(index)}>Remove</button>
                     </div>
                 ))}
-                <div className="add-plugin-controls">
-                    <button type="button" className="add-btn" onClick={() => handleAddPlugin('responseTimeSLA')}>+ Add Response Time SLA</button>
-                    <button type="button" className="add-btn" onClick={() => handleAddPlugin('jsonAssertion')}>+ Add JSON Content Assertion</button>
+                <button type="button" className="add-btn" onClick={handleAddHeader}>Add Header</button>
+            </div>
+        )}
+        {activeTab === 'body' && !isWebSocket && (
+             <div className="form-section standalone">
+                {isGraphQL ? (
+                    <>
+                        <div className="form-group">
+                            <label>GraphQL Query</label>
+                            <textarea className="code-editor" placeholder={'query GetUsers {\n  users {\n    id\n    name\n  }\n}'} value={endpoint.body} onChange={e => handleChange('body', e.target.value)} rows={8}></textarea>
+                        </div>
+                        <div className="form-group">
+                            <label>GraphQL Variables (JSON)</label>
+                            <textarea className="code-editor" placeholder={'{ "limit": 10 }'} value={endpoint.variables} onChange={e => handleChange('variables', e.target.value)} rows={4}></textarea>
+                        </div>
+                    </>
+                ) : showBody && (
+                    <div className="form-group">
+                        <label>Request Body (JSON)</label>
+                        <textarea className="code-editor" value={endpoint.body} onChange={e => handleChange('body', e.target.value)} rows={12}></textarea>
+                    </div>
+                )}
+             </div>
+        )}
+        {activeTab === 'script' && !isWebSocket && (
+             <div className="form-section standalone">
+                <h3>Custom Test Script</h3>
+                <p className="form-tip">Write custom JavaScript to run assertions after the request is complete. Use `apm.test()` to define test cases and `apm.assert()` to make assertions.</p>
+                <div className="form-group">
+                    <textarea 
+                        className="code-editor" 
+                        value={endpoint.customScript} 
+                        onChange={e => handleChange('customScript', e.target.value)}
+                        placeholder={scriptPlaceholder}
+                        rows={12}
+                    ></textarea>
                 </div>
             </div>
         )}
 
+      </div>
+      
       <div className="form-actions">
         <button type="button" className="cancel-btn" onClick={onCancel}>Cancel</button>
         <button type="submit" className="submit-btn">Add Endpoint</button>
@@ -957,7 +1256,7 @@ const LatencyChart = ({ history, timeRange, performanceStats }: { history: Histo
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (!history || history.length < 2 || !svgRef.current || !containerRef.current) return;
+        if (!Array.isArray(history) || history.length < 2 || !svgRef.current || !containerRef.current) return;
 
         const now = Date.now();
         const timeRanges = {
@@ -1213,7 +1512,7 @@ const AIAnalysisDisplay = ({ analysis }: { analysis: AIAnalysisResult }) => {
     );
 };
 
-const GlobalDashboard = ({ endpoints, history, onSelectEndpoint }: { endpoints: Endpoint[]; history: HistoryItem[]; onSelectEndpoint: (id: string) => void; }) => {
+const GlobalDashboard = ({ endpoints, history, onSelectEndpoint, onAutoSetup, onShowAddForm }: { endpoints: Endpoint[]; history: HistoryItem[]; onSelectEndpoint: (id: string) => void; onAutoSetup: () => void; onShowAddForm: () => void; }) => {
     const summary = useMemo(() => {
         const now = Date.now();
         const last24h = now - 24 * 60 * 60 * 1000;
@@ -1277,6 +1576,26 @@ const GlobalDashboard = ({ endpoints, history, onSelectEndpoint }: { endpoints: 
         
         return <svg className="sparkline" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none"><path d={`M ${pathData}`} /></svg>;
     };
+
+    if (endpoints.length === 0) {
+        return (
+            <div className="dashboard-empty-state">
+                <div className="empty-state-content">
+                    <ChartBarIcon />
+                    <h2>Welcome to API Monitor Pro</h2>
+                    <p>You haven't added any endpoints yet. Get started by adding one manually or using our AI-powered auto-setup.</p>
+                    <div className="empty-state-actions">
+                        <button className="setup-btn primary" onClick={onAutoSetup}>
+                            <SparklesIcon /> Auto-setup with AI
+                        </button>
+                        <button className="setup-btn" onClick={onShowAddForm}>
+                            <PlusIcon /> Add Endpoint Manually
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="global-dashboard">
@@ -1349,10 +1668,11 @@ const GlobalDashboard = ({ endpoints, history, onSelectEndpoint }: { endpoints: 
     );
 };
 
-const HistoryLogItem = ({ item }: { item: HistoryItem }) => {
+const HistoryLogItem: React.FC<{ item: HistoryItem }> = ({ item }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     
-    const hasDetails = (item.pluginResults && item.pluginResults.length > 0) || item.responseBody;
+    const hasDetails = (item.pluginResults && item.pluginResults.length > 0) || (item.scriptResults && item.scriptResults.length > 0) || item.responseBody;
+    const detailsId = `log-details-${item.id}`;
 
     const formattedBody = useMemo(() => {
         if (!item.responseBody) return null;
@@ -1363,10 +1683,25 @@ const HistoryLogItem = ({ item }: { item: HistoryItem }) => {
             return item.responseBody;
         }
     }, [item.responseBody]);
+    
+    const scriptSummary = useMemo(() => {
+        if (!item.scriptResults || item.scriptResults.length === 0) return null;
+        const passed = item.scriptResults.filter(r => r.success).length;
+        const total = item.scriptResults.length;
+        const allPassed = passed === total;
+        return <span className={`script-summary-badge ${allPassed ? 'status-up' : 'status-down'}`}>{`Tests: ${passed}/${total}`}</span>
+    }, [item.scriptResults]);
 
     return (
         <div className="log-item">
-            <div className="log-main-row" onClick={() => hasDetails && setIsExpanded(!isExpanded)}>
+            <button
+                type="button"
+                className="log-main-row"
+                onClick={() => hasDetails && setIsExpanded(!isExpanded)}
+                aria-expanded={isExpanded}
+                aria-controls={detailsId}
+                disabled={!hasDetails}
+            >
                 <div className="log-status">
                     {item.success ? <CheckCircleIcon className="status-up" /> : <XCircleIcon className="status-down" />}
                 </div>
@@ -1375,18 +1710,19 @@ const HistoryLogItem = ({ item }: { item: HistoryItem }) => {
                     <span className={`log-method method-badge method-${item.method.toLowerCase()}`}>{item.method}</span>
                     <span>Status: {item.statusCode || 'N/A'}</span>
                     <span>Latency: {item.latency != null ? `${item.latency} ms` : 'N/A'}</span>
+                    {scriptSummary}
                     {item.error && <span className="error-text">Error: {item.error}</span>}
                 </div>
                 {hasDetails && (
                     <div className="log-expand-control">
-                        <button className={`expand-btn ${isExpanded ? 'expanded' : ''}`}>
+                        <span className={`expand-indicator ${isExpanded ? 'expanded' : ''}`}>
                             <ChevronDownIcon />
-                        </button>
+                        </span>
                     </div>
                 )}
-            </div>
+            </button>
             {isExpanded && hasDetails && (
-                <div className="log-expanded-details">
+                <div className="log-expanded-details" id={detailsId}>
                     {item.pluginResults && item.pluginResults.length > 0 && (
                         <div className="log-plugins-details">
                             <h4>Plugin Results</h4>
@@ -1396,6 +1732,17 @@ const HistoryLogItem = ({ item }: { item: HistoryItem }) => {
                                     <span><strong>{result.name}:</strong> {result.message}</span>
                                 </div>
                             ))}
+                        </div>
+                    )}
+                    {item.scriptResults && item.scriptResults.length > 0 && (
+                        <div className="log-plugins-details">
+                             <h4>Custom Script Test Results</h4>
+                             {item.scriptResults.map((result, i) => (
+                                <div key={i} className="plugin-result">
+                                    {result.success ? <CheckCircleIcon className="status-up" /> : <XCircleIcon className="status-down" />}
+                                    <span><strong>{result.name}:</strong> {result.success ? 'Passed' : <span className="error-text">{result.error}</span>}</span>
+                                </div>
+                             ))}
                         </div>
                     )}
                     {item.responseBody && (
@@ -1541,7 +1888,7 @@ const BenchmarkResultDisplay = ({ result, previousResult }: { result: BenchmarkR
     )
 };
 
-const BenchmarkHistoryItem = ({ result, onSelect, isActive }: { result: BenchmarkResult; onSelect: () => void; isActive: boolean }) => (
+const BenchmarkHistoryItem: React.FC<{ result: BenchmarkResult; onSelect: () => void; isActive: boolean }> = ({ result, onSelect, isActive }) => (
     <div className={`benchmark-history-item ${isActive ? 'active' : ''}`} onClick={onSelect}>
         <div className="history-item-header">
             <strong>{new Date(result.timestamp).toLocaleString()}</strong>
@@ -1561,7 +1908,6 @@ const BenchmarkView = ({ endpoint, benchmarkHistory, onSaveResult }: { endpoint:
     const [isConfiguring, setIsConfiguring] = useState(false);
     const [isBenchmarking, setIsBenchmarking] = useState(false);
     const [progress, setProgress] = useState(0);
-    const liveResultsRef = useRef({ rps: 0, avgLatency: 0, errors: 0 });
     const [liveResultsDisplay, setLiveResultsDisplay] = useState({ rps: 0, avgLatency: 0, errors: 0 });
     const [selectedResult, setSelectedResult] = useState<BenchmarkResult | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -1572,7 +1918,6 @@ const BenchmarkView = ({ endpoint, benchmarkHistory, onSaveResult }: { endpoint:
         setIsConfiguring(false);
         setIsBenchmarking(true);
         setProgress(0);
-        liveResultsRef.current = { rps: 0, avgLatency: 0, errors: 0 };
         setLiveResultsDisplay({ rps: 0, avgLatency: 0, errors: 0 });
         setSelectedResult(null);
         setError(null);
@@ -1583,7 +1928,6 @@ const BenchmarkView = ({ endpoint, benchmarkHistory, onSaveResult }: { endpoint:
         try {
             const result = await runBenchmark(endpoint, config, (prog, live) => {
                 setProgress(prog);
-                liveResultsRef.current = live;
                 setLiveResultsDisplay(live);
             }, abortControllerRef.current.signal);
             
@@ -1654,8 +1998,8 @@ const BenchmarkView = ({ endpoint, benchmarkHistory, onSaveResult }: { endpoint:
                     <div className="benchmark-history-log">
                         {benchmarkHistory.length === 0 && <p className="placeholder-text">No past results.</p>}
                         {benchmarkHistory.map(result => (
-                            <BenchmarkHistoryItem 
-                                key={result.id} 
+                            <BenchmarkHistoryItem
+                                key={result.id}
                                 result={result} 
                                 onSelect={() => setSelectedResult(result)}
                                 isActive={selectedResult?.id === result.id}
@@ -1939,14 +2283,14 @@ const SystemMapView = ({ endpoints, endpointStatuses, onSelectEndpoint }: { endp
     const svgRef = useRef<SVGSVGElement>(null);
     const [positions, setPositions] = useState<{[id: string]: {x: number, y: number}}>({});
 
-    useEffect(() => {
-        if (!svgRef.current) return;
+    const calculatePositions = useCallback(() => {
+        if (!svgRef.current || endpoints.length === 0) return;
         const { width, height } = svgRef.current.getBoundingClientRect();
         const centerX = width / 2;
         const centerY = height / 2;
         const radius = Math.min(width, height) / 2 - 80;
         const newPositions: {[id: string]: {x: number, y: number}} = {};
-        const angleStep = endpoints.length > 0 ? (2 * Math.PI) / endpoints.length : 0;
+        const angleStep = (2 * Math.PI) / endpoints.length;
         
         endpoints.forEach((endpoint, i) => {
             newPositions[endpoint.id] = {
@@ -1955,7 +2299,13 @@ const SystemMapView = ({ endpoints, endpointStatuses, onSelectEndpoint }: { endp
             };
         });
         setPositions(newPositions);
-    }, [endpoints, svgRef.current]);
+    }, [endpoints]);
+
+    useEffect(() => {
+        calculatePositions();
+        window.addEventListener('resize', calculatePositions);
+        return () => window.removeEventListener('resize', calculatePositions);
+    }, [calculatePositions]);
 
     const edges = useMemo(() => {
         const result: { from: string, to: string }[] = [];
@@ -2013,18 +2363,121 @@ const SystemMapView = ({ endpoints, endpointStatuses, onSelectEndpoint }: { endp
     )
 }
 
+const SettingsModal = ({ settings, setSettings, onClose }: { settings: AppSettings, setSettings: React.Dispatch<React.SetStateAction<AppSettings>>, onClose: () => void }) => {
+    const [newTemplateName, setNewTemplateName] = useState('');
+
+    const handleSettingChange = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
+        setSettings(prev => ({...prev, [key]: value}));
+    };
+
+    const handleAddTemplate = () => {
+        if (!newTemplateName.trim()) return;
+        const newTemplate: EndpointTemplate = {
+            id: `tpl_${Date.now()}`,
+            name: newTemplateName.trim(),
+            config: {
+                ...DEFAULT_ENDPOINT,
+                group: 'From Template',
+            }
+        };
+        handleSettingChange('templates', [...settings.templates, newTemplate]);
+        setNewTemplateName('');
+    };
+    
+    const handleRemoveTemplate = (id: string) => {
+        handleSettingChange('templates', settings.templates.filter(t => t.id !== id));
+    };
+
+    return (
+        <div className="modal-overlay">
+            <div className="modal-content settings-modal">
+                <h2>Settings</h2>
+
+                <div className="form-section">
+                    <h3><PaintBrushIcon /> Appearance</h3>
+                    <div className="form-group">
+                        <label>Theme</label>
+                        <div className="segmented-control">
+                            <button className={settings.theme === 'system' ? 'active' : ''} onClick={() => handleSettingChange('theme', 'system')}>System</button>
+                            <button className={settings.theme === 'light' ? 'active' : ''} onClick={() => handleSettingChange('theme', 'light')}>Light</button>
+                            <button className={settings.theme === 'dark' ? 'active' : ''} onClick={() => handleSettingChange('theme', 'dark')}>Dark</button>
+                        </div>
+                    </div>
+                     <div className="form-group">
+                        <label>Accent Color</label>
+                        <div className="color-picker-wrapper">
+                             <input 
+                                type="color" 
+                                value={settings.accentColor} 
+                                onChange={e => handleSettingChange('accentColor', e.target.value)}
+                             />
+                             <span>{settings.accentColor}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="form-section">
+                    <h3><ClipboardIcon/> Endpoint Templates</h3>
+                    <p className="form-tip">Create templates to quickly add new endpoints with pre-filled configurations.</p>
+                    <div className="add-workspace">
+                        <input
+                            type="text"
+                            value={newTemplateName}
+                            onChange={(e) => setNewTemplateName(e.target.value)}
+                            placeholder="New template name"
+                        />
+                        <button onClick={handleAddTemplate}>Create Template</button>
+                    </div>
+                     <ul className="workspace-list">
+                        {settings.templates.map(template => (
+                            <li key={template.id}>
+                                <span>{template.name}</span>
+                                <div className="workspace-actions">
+                                    <button onClick={() => alert('Editing templates coming soon!')} disabled><PencilIcon /></button>
+                                    <button onClick={() => handleRemoveTemplate(template.id)}><TrashIcon /></button>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
+                <div className="form-actions">
+                    <button type="button" className="submit-btn" onClick={onClose}>Done</button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const App: React.FC = () => {
     const [workspaces, setWorkspaces] = useLocalStorage<Workspaces>('api-monitor-workspaces', {});
     const [activeWorkspaceId, setActiveWorkspaceId] = useLocalStorage<string | null>('api-monitor-active-workspace', null);
+    const [settings, setSettings] = useLocalStorage<AppSettings>('api-monitor-settings', DEFAULT_SETTINGS);
 
     const [view, setView] = useState<ViewType>('dashboard');
     const [selectedEndpointId, setSelectedEndpointId] = useState<string | null>(null);
     const [showAddForm, setShowAddForm] = useState(false);
     const [isWorkspaceManagerOpen, setIsWorkspaceManagerOpen] = useState(false);
     const [isWorkspaceSwitcherOpen, setIsWorkspaceSwitcherOpen] = useState(false);
+    const [isAutoSetupOpen, setIsAutoSetupOpen] = useState(false);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const timersRef = useRef<{ [key: string]: number }>({});
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const workspaceSwitcherRef = useRef<HTMLDivElement>(null);
+    
+    useEffect(() => {
+        // Apply theme and accent color
+        const root = document.documentElement;
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (settings.theme === 'dark' || (settings.theme === 'system' && prefersDark)) {
+            root.classList.add('theme-dark');
+            root.classList.remove('theme-light');
+        } else {
+            root.classList.add('theme-light');
+            root.classList.remove('theme-dark');
+        }
+        root.style.setProperty('--accent-color', settings.accentColor);
+    }, [settings.theme, settings.accentColor]);
 
     useEffect(() => {
         if (Object.keys(workspaces).length === 0) {
@@ -2034,6 +2487,21 @@ const App: React.FC = () => {
         } else if (!activeWorkspaceId || !workspaces[activeWorkspaceId]) {
             setActiveWorkspaceId(Object.keys(workspaces)[0]);
         }
+    }, []);
+
+    useEffect(() => {
+        setView('dashboard');
+        setSelectedEndpointId(null);
+    }, [activeWorkspaceId]);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (workspaceSwitcherRef.current && !workspaceSwitcherRef.current.contains(event.target as Node)) {
+                setIsWorkspaceSwitcherOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     const activeWorkspace = activeWorkspaceId ? workspaces[activeWorkspaceId] : null;
@@ -2110,6 +2578,21 @@ const App: React.FC = () => {
             return {...prev, [activeWorkspaceId]: {...ws, endpoints: [...ws.endpoints, newEndpoint]}};
         });
         setShowAddForm(false);
+    };
+
+    const handleAddMultipleEndpoints = (endpointsData: Omit<Endpoint, 'id' | 'webhookToken'>[]) => {
+        if (!activeWorkspaceId) return;
+        const newEndpoints: Endpoint[] = endpointsData.map(data => ({
+            ...data,
+            id: `ep_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+            webhookToken: generateWebhookToken()
+        }));
+        
+        setWorkspaces(prev => {
+            const ws = prev[activeWorkspaceId];
+            return {...prev, [activeWorkspaceId]: {...ws, endpoints: [...ws.endpoints, ...newEndpoints]}};
+        });
+        setIsAutoSetupOpen(false);
     };
 
     const handleDeleteEndpoint = (id: string) => {
@@ -2263,7 +2746,13 @@ const App: React.FC = () => {
                 return null;
             case 'dashboard':
             default:
-                 return <GlobalDashboard endpoints={activeWorkspace.endpoints} history={activeWorkspace.history} onSelectEndpoint={handleSelectEndpoint}/>;
+                 return <GlobalDashboard 
+                    endpoints={activeWorkspace.endpoints} 
+                    history={activeWorkspace.history} 
+                    onSelectEndpoint={handleSelectEndpoint}
+                    onAutoSetup={() => setIsAutoSetupOpen(true)}
+                    onShowAddForm={() => setShowAddForm(true)}
+                 />;
         }
     };
 
@@ -2272,9 +2761,12 @@ const App: React.FC = () => {
             <aside className="sidebar">
                 <div className="sidebar-header">
                     <h1>API Monitor Pro</h1>
+                     <button className="settings-btn" onClick={() => setIsSettingsOpen(true)} aria-label="Open settings">
+                        <CogIcon />
+                    </button>
                 </div>
                 
-                <div className="workspace-switcher">
+                <div className="workspace-switcher" ref={workspaceSwitcherRef}>
                     <button className="switcher-toggle" onClick={() => setIsWorkspaceSwitcherOpen(!isWorkspaceSwitcherOpen)}>
                         <span>{activeWorkspace?.name || 'No Workspace'}</span>
                         <ArrowDownIcon />
@@ -2288,7 +2780,7 @@ const App: React.FC = () => {
                             ))}
                             <div className="switcher-actions">
                                 <button onClick={() => { setIsWorkspaceManagerOpen(true); setIsWorkspaceSwitcherOpen(false); }}>
-                                    <CogIcon /> Manage
+                                    <PencilIcon /> Manage Workspaces
                                 </button>
                             </div>
                         </div>
@@ -2299,13 +2791,13 @@ const App: React.FC = () => {
                     <div className="endpoint-list-header">
                         <button onClick={() => { setSelectedEndpointId(null); setView('dashboard'); }}>Dashboard</button>
                         <button onClick={() => { setSelectedEndpointId(null); setView('map'); }}>System Map</button>
-                        <button className="add-endpoint-btn" onClick={() => setShowAddForm(true)}><PlusIcon /></button>
+                        <button className="add-endpoint-btn" onClick={() => setShowAddForm(true)} aria-label="Add new endpoint"><PlusIcon /></button>
                     </div>
-                    {Object.entries(groupedEndpoints).map(([group, endpoints]) => (
+                    {Object.entries(groupedEndpoints).map(([group, endpoints]: [string, any]) => (
                         <div key={group} className="endpoint-group-nav">
                             <h4>{group}</h4>
                             <ul>
-                            {endpoints.map(endpoint => (
+                            {endpoints.map((endpoint: Endpoint) => (
                                 <li key={endpoint.id} className={selectedEndpointId === endpoint.id ? 'active' : ''} onClick={() => handleSelectEndpoint(endpoint.id)}>
                                     <span className={`status-dot ${
                                         endpointStatuses[endpoint.id] ? 'status-up' : 'status-down'
@@ -2328,7 +2820,7 @@ const App: React.FC = () => {
                 {showAddForm && (
                     <div className="modal-overlay">
                         <div className="modal-content">
-                            <AddEndpointForm allEndpoints={activeWorkspace?.endpoints || []} onAdd={handleAddEndpoint} onCancel={() => setShowAddForm(false)} />
+                            <AddEndpointForm allEndpoints={activeWorkspace?.endpoints || []} onAdd={handleAddEndpoint} onCancel={() => setShowAddForm(false)} templates={settings.templates} />
                         </div>
                     </div>
                 )}
@@ -2339,6 +2831,19 @@ const App: React.FC = () => {
                         onAdd={handleAddWorkspace}
                         onRename={handleRenameWorkspace}
                         onDelete={handleDeleteWorkspace}
+                    />
+                )}
+                 {isAutoSetupOpen && (
+                    <AutoSetupModal
+                        onAddMultiple={handleAddMultipleEndpoints}
+                        onCancel={() => setIsAutoSetupOpen(false)}
+                    />
+                )}
+                {isSettingsOpen && (
+                    <SettingsModal
+                        settings={settings}
+                        setSettings={setSettings}
+                        onClose={() => setIsSettingsOpen(false)}
                     />
                 )}
                 

@@ -1,0 +1,5 @@
+{
+  "name": "Universal API Analyzer",
+  "description": "An advanced, enterprise-grade API monitoring dashboard that provides a universal analyzer for multiple protocols including REST, GraphQL, WebSockets, gRPC-Web, and SOAP. Features endpoint grouping, dependency mapping, advanced alerting, maintenance windows, and a protocol-aware AI Co-pilot for real-time diagnostics.",
+  "requestFramePermissions": []
+}

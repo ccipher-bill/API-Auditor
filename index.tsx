@@ -57,7 +57,15 @@ const ArrowTrendingUpIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns
 const ArrowTrendingDownIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path d="M12.22 14.32a.75.75 0 001.06-1.06l-4.25-4.25a.75.75 0 00-1.06 0l-2.25 2.25a.75.75 0 101.06 1.06l1.72-1.72 3.72 3.72z" /><path d="M4.5 14.5a.75.75 0 01-1.5 0v-9a.75.75 0 01.75-.75h9a.75.75 0 010 1.5H5.25v8.25z" /></svg>;
 const ShareIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path fillRule="evenodd" d="M15.5 4.832a.75.75 0 00-1.06-.02L12.455 6.47a3.5 3.5 0 00-2.425.218l-1.84-1.06a3.5 3.5 0 10-1.155 2.05l1.84 1.06a3.5 3.5 0 000 2.644l-1.84 1.06a3.5 3.5 0 101.155 2.05l1.84-1.06a3.5 3.5 0 002.425.218l1.985 1.66a.75.75 0 101.08-1.04l-1.985-1.66a3.5 3.5 0 000-4.704l1.985-1.66a.75.75 0 00-.02-1.06zM5.5 6a2 2 0 100-4 2 2 0 000 4zm0 12a2 2 0 100-4 2 2 0 000 4zm10-7a2 2 0 10-4 0 2 2 0 004 0z" clipRule="evenodd" /></svg>;
 const PaintBrushIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path fillRule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm11 2a.75.75 0 00-1.5 0v3.5a.75.75 0 001.5 0V7z" clipRule="evenodd" /></svg>;
-const CodeBracketIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path fillRule="evenodd" d="M6.28 5.22a.75.75 0 010 1.06L2.56 10l3.72 3.72a.75.75 0 01-1.06 1.06L.97 10.53a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 0zm7.44 0a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06L14.78 14.78a.75.75 0 01-1.06-1.06L17.44 10l-3.72-3.72a.75.75 0 010-1.06zM10.75 4.75a.75.75 0 01.75.75v8.5a.75.75 0 01-1.5 0v-8.5a.75.75 0 01.75-.75z" clipRule="evenodd" /></svg>;
+const CodeBracketIcon = (props: React.SVGProps<SVGSVGElement> & { title?: string }) => {
+    const { title, ...rest } = props;
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...rest}>
+            {title && <title>{title}</title>}
+            <path fillRule="evenodd" d="M6.28 5.22a.75.75 0 010 1.06L2.56 10l3.72 3.72a.75.75 0 01-1.06 1.06L.97 10.53a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 0zm7.44 0a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06L14.78 14.78a.75.75 0 01-1.06-1.06L17.44 10l-3.72-3.72a.75.75 0 010-1.06zM10.75 4.75a.75.75 0 01.75.75v8.5a.75.75 0 01-1.5 0v-8.5a.75.75 0 01.75-.75z" clipRule="evenodd" />
+        </svg>
+    );
+};
 const KeyIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" /></svg>;
 const EyeIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" /><path fillRule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.18l3.423-3.423a1.651 1.651 0 012.334 0L10 9.404l3.579-3.579a1.651 1.651 0 012.334 0l3.423 3.423a1.651 1.651 0 010 1.18l-3.423 3.423a1.651 1.651 0 01-2.334 0L10 10.59l-3.579 3.579a1.651 1.651 0 01-2.334 0L.664 10.59z" clipRule="evenodd" /></svg>;
 const EyeSlashIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}><path fillRule="evenodd" d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.18l-3.423-3.423a1.651 1.651 0 00-2.334 0L10 9.404 4.341 3.745A10.009 10.009 0 003.28 2.22zM10 12.5a2.5 2.5 0 01-2.5-2.5 10.022 10.022 0 01.05-1.033l-1.428-1.428A4.001 4.001 0 0010 14.5a4 4 0 100-8 3.978 3.978 0 00-1.032.15l-1.428-1.428A5.5 5.5 0 0115.5 9c0 .48-.06.94-.17 1.382l-1.408-1.408a2.5 2.5 0 01-1.422-1.422l-1.408-1.408A5.485 5.485 0 0110 3.5a5.5 5.5 0 015.5 5.5c0 .678-.12 1.33-.352 1.936l-2.091-2.091a4.004 4.004 0 00-2.296-2.296L10 5.091a2.5 2.5 0 00-2.5 2.5c0 .313.056.613.163.89l-1.17-1.17A4.001 4.001 0 004.5 9c0 .35.044.688.128 1.01l-1.08-1.08A5.5 5.5 0 014.5 9a5.5 5.5 0 0110.155 1.55l-1.579-1.579A4.002 4.002 0 0010 7.5a2.5 2.5 0 00-2.5 2.5c0 .313.056.613.163.89l-1.17-1.17A4.001 4.001 0 004.5 9c0 .35.044.688.128 1.01l-1.08-1.08A5.5 5.5 0 014.5 9a5.5 5.5 0 0110.155 1.55l-1.579-1.579A4.002 4.002 0 0010 7.5a2.5 2.5 0 00-2.5 2.5c0 .313.056.613.163.89l-1.17-1.17A4.001 4.001 0 004.5 9c0 .35.044.688.128 1.01l-1.08-1.08A5.5 5.5 0 014.5 9a5.5 5.5 0 0110.155 1.55l-1.579-1.579A4.002 4.002 0 0010 7.5a2.5 2.5 0 00-2.5 2.5z" clipRule="evenodd" /></svg>;
@@ -105,6 +113,8 @@ type HistoryItem = {
   latency?: number;
   error?: string;
   responseBody?: string;
+  requestHeaders?: { [key: string]: string };
+  responseHeaders?: { [key: string]: string };
   pluginResults?: { pluginId: string; type: string; name: string; success: boolean; message: string }[];
   scriptResults?: ScriptTestResult[];
 };
@@ -156,6 +166,7 @@ type AppSettings = {
     theme: 'system' | 'light' | 'dark';
     accentColor: string;
     templates: EndpointTemplate[];
+    devMode: boolean;
 };
 type ViewType = 'dashboard' | 'endpoint' | 'map';
 
@@ -174,6 +185,7 @@ const DEFAULT_SETTINGS: AppSettings = {
     theme: 'system',
     accentColor: '#007bff',
     templates: [],
+    devMode: false,
 };
 const INITIAL_AI_ANALYSIS: AIAnalysisResult = {
   status: 'UNKNOWN',
@@ -299,9 +311,11 @@ const executeSingleCheck = async (endpoint: Endpoint, method: HttpMethod): Promi
             requestBody = endpoint.body;
         }
 
+        const requestHeaders = { 'Content-Type': 'application/json', ...headers };
+
         const options: RequestInit = {
             method: effectiveMethod,
-            headers: { 'Content-Type': 'application/json', ...headers },
+            headers: requestHeaders,
             body: requestBody,
         };
 
@@ -309,6 +323,7 @@ const executeSingleCheck = async (endpoint: Endpoint, method: HttpMethod): Promi
         const responseText = await response.text();
         const latency = Date.now() - startTime;
         const truncatedBody = responseText.length > 5120 ? responseText.substring(0, 5120) + '... (truncated)' : responseText;
+        const responseHeaders = Object.fromEntries(response.headers.entries());
         
         const baseSuccess = endpoint.assertions.every(a => {
             if (a.type === 'statusCode') return response.status.toString() === a.value;
@@ -366,7 +381,7 @@ const executeSingleCheck = async (endpoint: Endpoint, method: HttpMethod): Promi
                     json: () => responseBodyJson,
                     text: () => responseText,
                     status: response.status,
-                    headers: Object.fromEntries(response.headers.entries()),
+                    headers: responseHeaders,
                     latency: latency,
                 },
                 test: (name: string, fn: () => void) => {
@@ -406,7 +421,9 @@ const executeSingleCheck = async (endpoint: Endpoint, method: HttpMethod): Promi
             latency, 
             pluginResults, 
             scriptResults,
-            responseBody: truncatedBody, 
+            responseBody: truncatedBody,
+            requestHeaders,
+            responseHeaders,
             error: graphqlError || scriptError || undefined 
         };
 
@@ -431,7 +448,7 @@ const suggestConfig = async (url: string): Promise<Partial<Endpoint>> => {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
     const result = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
-      contents: `Analyze this API endpoint URL: "${url}". Suggest a configuration including a name, group, the most likely HTTP method (e.g., 'GET', 'POST'), and protocol ('http' or 'https').`,
+      contents: `Analyze this API endpoint URL: "${url}". Suggest a configuration including: a name, group, the most likely HTTP method, protocol, a list of common request headers (e.g., 'Accept: application/json'), and an optional custom test script. The script should use the 'apm' object which has 'apm.test()', 'apm.assert()', and 'apm.response.json()'. If a script is not relevant, return an empty string.`,
       config: {
         responseMimeType: 'application/json',
         responseSchema: {
@@ -441,8 +458,21 @@ const suggestConfig = async (url: string): Promise<Partial<Endpoint>> => {
             group: { type: Type.STRING, description: "A group name to categorize the endpoint." },
             method: { type: Type.STRING, description: "The suggested HTTP method ('GET', 'POST', 'PUT', 'DELETE', 'PATCH')." },
             protocol: { type: Type.STRING, description: "The protocol ('http' or 'https')." },
+            headers: {
+                type: Type.ARRAY,
+                description: "A list of suggested HTTP headers.",
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        key: { type: Type.STRING },
+                        value: { type: Type.STRING }
+                    },
+                    required: ['key', 'value']
+                }
+            },
+            customScript: { type: Type.STRING, description: "An optional example test script. Can be an empty string." }
           },
-          required: ["name", "group", "method", "protocol"],
+          required: ["name", "group", "method", "protocol", "headers", "customScript"],
         },
       }
     });
@@ -457,6 +487,8 @@ const suggestConfig = async (url: string): Promise<Partial<Endpoint>> => {
       methods: validMethods.includes(suggestedMethod as HttpMethod) ? [suggestedMethod as HttpMethod] : ['GET'],
       protocol: suggestion.protocol === 'http' ? 'http' : 'https',
       assertions: [{ type: 'statusCode', value: '200' }],
+      headers: suggestion.headers || [],
+      customScript: suggestion.customScript || '',
     };
   } catch (error) {
     console.error("AI config suggestion failed:", error);
@@ -933,6 +965,7 @@ const AddEndpointForm = ({ allEndpoints, onAdd, onCancel, templates }: { allEndp
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'config' | 'headers' | 'body' | 'script'>('config');
+  const [isScriptAiGenerated, setIsScriptAiGenerated] = useState(false);
 
   useEffect(() => {
     setEndpoint(prev => {
@@ -1022,9 +1055,13 @@ const AddEndpointForm = ({ allEndpoints, onAdd, onCancel, templates }: { allEndp
     if (!endpoint.url) return;
     setIsSuggesting(true);
     setSuggestionError(null);
+    setIsScriptAiGenerated(false);
     try {
         const suggestion = await suggestConfig(endpoint.url);
         setEndpoint(prev => ({...prev, ...suggestion}));
+        if (suggestion.customScript && suggestion.customScript.trim()) {
+            setIsScriptAiGenerated(true);
+        }
     } catch (error: any) {
         const errorMessage = error?.message || String(error);
         if (errorMessage.includes('API Key')) {
@@ -1049,6 +1086,11 @@ const AddEndpointForm = ({ allEndpoints, onAdd, onCancel, templates }: { allEndp
             url: prev.url
         }));
     }
+  };
+  
+  const handleScriptChange = (value: string) => {
+      setIsScriptAiGenerated(false);
+      handleChange('customScript', value);
   };
   
   const scriptPlaceholder = `// The 'apm' object is globally available in this script.
@@ -1233,10 +1275,16 @@ apm.test("Content-Type header is correct", () => {
                     <textarea 
                         className="code-editor" 
                         value={endpoint.customScript} 
-                        onChange={e => handleChange('customScript', e.target.value)}
+                        onChange={e => handleScriptChange(e.target.value)}
                         placeholder={scriptPlaceholder}
                         rows={12}
                     ></textarea>
+                     {isScriptAiGenerated && (
+                        <div className="ai-script-warning">
+                            <WarningIcon />
+                            <span><strong>AI-Generated Script:</strong> Please review this script carefully. AI can make mistakes. This code runs in a sandboxed environment, but you should always validate its logic before use.</span>
+                        </div>
+                    )}
                 </div>
             </div>
         )}
@@ -1668,10 +1716,10 @@ const GlobalDashboard = ({ endpoints, history, onSelectEndpoint, onAutoSetup, on
     );
 };
 
-const HistoryLogItem: React.FC<{ item: HistoryItem }> = ({ item }) => {
+const HistoryLogItem: React.FC<{ item: HistoryItem; devMode: boolean; }> = ({ item, devMode }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     
-    const hasDetails = (item.pluginResults && item.pluginResults.length > 0) || (item.scriptResults && item.scriptResults.length > 0) || item.responseBody;
+    const hasDetails = (item.pluginResults && item.pluginResults.length > 0) || (item.scriptResults && item.scriptResults.length > 0) || item.responseBody || (devMode && (item.requestHeaders || item.responseHeaders));
     const detailsId = `log-details-${item.id}`;
 
     const formattedBody = useMemo(() => {
@@ -1722,7 +1770,19 @@ const HistoryLogItem: React.FC<{ item: HistoryItem }> = ({ item }) => {
                 )}
             </button>
             {isExpanded && hasDetails && (
-                <div className="log-expanded-details" id={detailsId}>
+                <div id={detailsId} className="log-expanded-details">
+                    {devMode && item.requestHeaders && (
+                        <div className="log-headers">
+                            <h4>Request Headers</h4>
+                            <pre><code>{JSON.stringify(item.requestHeaders, null, 2)}</code></pre>
+                        </div>
+                    )}
+                     {devMode && item.responseHeaders && (
+                        <div className="log-headers">
+                            <h4>Response Headers</h4>
+                            <pre><code>{JSON.stringify(item.responseHeaders, null, 2)}</code></pre>
+                        </div>
+                    )}
                     {item.pluginResults && item.pluginResults.length > 0 && (
                         <div className="log-plugins-details">
                             <h4>Plugin Results</h4>
@@ -2012,7 +2072,7 @@ const BenchmarkView = ({ endpoint, benchmarkHistory, onSaveResult }: { endpoint:
     );
 };
 
-const EndpointView = ({ endpoint, history, benchmarkHistory, onDelete, onUpdate, onRegenerateToken, onSaveBenchmarkResult }: { 
+const EndpointView = ({ endpoint, history, benchmarkHistory, onDelete, onUpdate, onRegenerateToken, onSaveBenchmarkResult, devMode }: { 
     endpoint: Endpoint; 
     history: HistoryItem[];
     benchmarkHistory: BenchmarkResult[];
@@ -2020,6 +2080,7 @@ const EndpointView = ({ endpoint, history, benchmarkHistory, onDelete, onUpdate,
     onUpdate: (endpoint: Endpoint) => void; 
     onRegenerateToken: (id: string) => void; 
     onSaveBenchmarkResult: (endpointId: string, result: BenchmarkResult) => void;
+    devMode: boolean;
 }) => {
     const [aiAnalysis, setAIAnalysis] = useState<AIAnalysisResult>(INITIAL_AI_ANALYSIS);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -2054,6 +2115,35 @@ const EndpointView = ({ endpoint, history, benchmarkHistory, onDelete, onUpdate,
         setAIAnalysis(INITIAL_AI_ANALYSIS);
         setActiveTab('monitoring');
     }, [endpoint.id]);
+
+    const generateCurlForEndpoint = () => {
+        const method = endpoint.apiType === 'GraphQL' ? 'POST' : endpoint.methods[0] || 'GET';
+        let curl = `curl -X ${method} "${endpoint.protocol}://${endpoint.url}"`;
+        
+        const headers = [...endpoint.headers];
+        if ((endpoint.apiType === 'GraphQL' || (['POST', 'PUT', 'PATCH'].includes(method) && endpoint.body)) && !headers.some(h => h.key.toLowerCase() === 'content-type')) {
+            headers.push({ key: 'Content-Type', value: 'application/json' });
+        }
+
+        headers.forEach(h => {
+            if (h.key) {
+                curl += ` \\\n  -H '${h.key}: ${h.value}'`;
+            }
+        });
+
+        if (endpoint.apiType === 'GraphQL') {
+            try {
+                const variables = endpoint.variables ? JSON.parse(endpoint.variables) : {};
+                const body = { query: endpoint.body, variables };
+                curl += ` \\\n  -d '${JSON.stringify(body, null, 2)}'`;
+            } catch (e) {
+                curl += ` \\\n  -d '{"query": "${endpoint.body.replace(/\s+/g, ' ')}", "variables": { /* Invalid JSON */ }}'`;
+            }
+        } else if (['POST', 'PUT', 'PATCH'].includes(method) && endpoint.body) {
+            curl += ` \\\n  -d '${endpoint.body}'`;
+        }
+        return curl;
+    };
 
     const performanceStats = useMemo(() => {
         const last24h = history.filter(h => h.timestamp > Date.now() - 24 * 60 * 60 * 1000);
@@ -2154,7 +2244,7 @@ const EndpointView = ({ endpoint, history, benchmarkHistory, onDelete, onUpdate,
                     </div>
 
                     <div className="card cicd-card">
-                        <h3><LinkIcon /> CI/CD Integration</h3>
+                        <h3><LinkIcon /> CI/CD & Developer Info</h3>
                         <p>Trigger a real-time health check for this endpoint from your CI/CD pipeline after a deployment.</p>
                         
                         <div className="webhook-display">
@@ -2174,17 +2264,24 @@ const EndpointView = ({ endpoint, history, benchmarkHistory, onDelete, onUpdate,
                         </div>
 
                         <div className="example-usage">
-                            <label>Example Usage (cURL)</label>
+                            <label>Webhook Usage (cURL)</label>
                             <pre><code>{`curl -X POST "${webhookUrl}"`}</code></pre>
                             <p>A successful check will return HTTP 200 with results. A failed check will return HTTP 500.</p>
                         </div>
+
+                        {devMode && (
+                            <div className="example-usage dev-mode-feature">
+                                <label>Example cURL for Endpoint</label>
+                                <pre><code>{generateCurlForEndpoint()}</code></pre>
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 <div className="card">
                     <HistoryLogSummary history={history} />
                     <div className="history-log">
-                        {history.map(item => <HistoryLogItem key={item.id} item={item} />)}
+                        {history.map(item => <HistoryLogItem key={item.id} item={item} devMode={devMode} />)}
                     </div>
                 </div>
               </>
@@ -2298,7 +2395,7 @@ const SystemMapView = ({ endpoints, endpointStatuses, onSelectEndpoint }: { endp
                 y: centerY + radius * Math.sin(i * angleStep - Math.PI / 2)
             };
         });
-        setPositions(newPositions);
+        setPositions(positions);
     }, [endpoints]);
 
     useEffect(() => {
@@ -2413,6 +2510,17 @@ const SettingsModal = ({ settings, setSettings, onClose }: { settings: AppSettin
                              />
                              <span>{settings.accentColor}</span>
                         </div>
+                    </div>
+                </div>
+
+                <div className="form-section">
+                    <h3><CodeBracketIcon /> Developer Mode</h3>
+                     <div className="form-group">
+                        <label className="toggle-switch">
+                            <input type="checkbox" checked={settings.devMode} onChange={e => handleSettingChange('devMode', e.target.checked)} />
+                            <span className="slider"></span>
+                            <span className="label-text">Enable developer-focused features like header inspection and advanced cURL commands.</span>
+                        </label>
                     </div>
                 </div>
 
@@ -2739,6 +2847,7 @@ const App: React.FC = () => {
                         onUpdate={handleUpdateEndpoint} 
                         onRegenerateToken={handleRegenerateWebhookToken} 
                         onSaveBenchmarkResult={handleSaveBenchmarkResult}
+                        devMode={settings.devMode}
                     />;
                 }
                  // Fallback to dashboard if no endpoint selected
@@ -2761,9 +2870,12 @@ const App: React.FC = () => {
             <aside className="sidebar">
                 <div className="sidebar-header">
                     <h1>API Monitor Pro</h1>
-                     <button className="settings-btn" onClick={() => setIsSettingsOpen(true)} aria-label="Open settings">
-                        <CogIcon />
-                    </button>
+                    <div className="header-actions">
+                        {settings.devMode && <CodeBracketIcon className="dev-mode-indicator" title="Developer Mode Active" />}
+                        <button className="settings-btn" onClick={() => setIsSettingsOpen(true)} aria-label="Open settings">
+                            <CogIcon />
+                        </button>
+                    </div>
                 </div>
                 
                 <div className="workspace-switcher" ref={workspaceSwitcherRef}>

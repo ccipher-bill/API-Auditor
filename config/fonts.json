@@ -1,0 +1,12 @@
+{
+  "allowed_fonts": [
+    "Arial",
+    "Courier New",
+    "Georgia",
+    "Times New Roman",
+    "Verdana",
+    "Segoe UI",
+    "Roboto"
+  ],
+  "block_system_fonts": true
+}

@@ -1,0 +1,13 @@
+{
+  "toolkit.telemetry.enabled": false,
+  "toolkit.telemetry.unified": false,
+  "datareporting.healthreport.uploadEnabled": false,
+  "datareporting.policy.dataSubmissionEnabled": false,
+  "browser.safebrowsing.malware.enabled": false,
+  "browser.safebrowsing.phishing.enabled": false,
+  "media.peerconnection.enabled": false,
+  "network.prefetch-next": false,
+  "network.dns.disablePrefetch": true,
+  "network.http.speculative-parallel-limit": 0,
+  "privacy.donottrackheader.enabled": true
+}

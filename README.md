@@ -1,17 +1,16 @@
+# Project Aegis: The Zero-Leak Browser
 
-# Run and deploy your AI Studio app
+## Executive Summary
+Project Aegis is a "Zero-Leak" browser designed for total privacy and sovereignty. It operates on a "Winning Line" philosophy: absolute refusal to compromise user data.
 
-This contains everything you need to run your app locally.
+## Core Architecture
+- **Engine**: Hardened Gecko Fork (Simulated/Planned).
+- **Language**: Rust components for memory safety.
+- **Isolation**: Micro-VM tabs, Ramdisk operation.
 
+## Status
+- **Phase**: Alpha
+- **Current Focus**: UI Prototype & Architecture Definition.
 
-
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Setup
+This repository contains the architectural blueprints and the React-based UI prototype for the browser interface.
